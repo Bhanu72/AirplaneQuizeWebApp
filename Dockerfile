@@ -1,5 +1,5 @@
-# Use an official Node runtime as a base image
-FROM node:slim as build
+# Use an official Node.js runtime as a base image
+FROM node:slim
 
 # Set the working directory
 WORKDIR /app
@@ -18,4 +18,5 @@ EXPOSE 3000
 
 # Start the application
 CMD ["npm", "start"]
+
 
