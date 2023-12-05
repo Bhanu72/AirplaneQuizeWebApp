@@ -1,44 +1,29 @@
-# Use an official Node.js runtime as a base image for the backend
-FROM node:14-alpine as backend
+# Use an official Node runtime as a base image
+FROM node:14-alpine as build
 
-# Set the working directory for the backend
-WORKDIR /app/backend
+# Set the working directory in the container
+WORKDIR /app
 
-# Copy package.json and package-lock.json for backend and install dependencies
-COPY backend/package*.json ./
+# Copy package.json and package-lock.json to the working directory
+COPY package*.json ./
+
+# Install dependencies
 RUN npm install
 
-# Copy the rest of the backend code
-COPY backend/ .
+# Copy the remaining application files to the working directory
+COPY . .
 
-# Build the backend
+# Build the React app
 RUN npm run build
 
-# Use an official Node.js runtime as a base image for the frontend
-FROM node:14-alpine as frontend
-
-# Set the working directory for the frontend
-WORKDIR /app/frontend
-
-# Copy package.json and package-lock.json for frontend and install dependencies
-COPY frontend/package*.json ./
-RUN npm install
-
-# Copy the rest of the frontend code
-COPY frontend/ .
-
-# Build the frontend
-RUN npm run build
-
-# Use Nginx as the base image for the production image
+# Use an official Nginx image as a base image for the production environment
 FROM nginx:alpine
 
-# Copy the built backend and frontend into the Nginx HTML directory
-COPY --from=backend /app/backend/build /usr/share/nginx/html/api
-COPY --from=frontend /app/frontend/build /usr/share/nginx/html
+# Copy the built React app from the build stage to the Nginx web server directory
+COPY --from=build /app/build /usr/share/nginx/html
 
-# Expose port 80
+# Expose port 80 to the outside world
 EXPOSE 80
 
-# Command to run the nginx server
+# Command to run the application
 CMD ["nginx", "-g", "daemon off;"]
